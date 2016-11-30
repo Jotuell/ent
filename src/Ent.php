@@ -1,0 +1,179 @@
+<?php
+namespace Ent;
+
+use Symfony\Component\Translation;
+use Timber;
+
+class Ent {
+    protected static $context = null;
+
+    public function __construct($theme_dir) {
+        // Create alias so that Ent class can be accessed typing `Ent::` without namespace backslash
+        class_alias(get_class($this), 'Ent');
+        
+        $timber = new Timber\Timber();
+        $assets = new \Ent\AssetsJSON($theme_dir .'/assets/assets.json', get_template_directory_uri());
+
+        // -------------
+        // REQUIRE FILES
+        // -------------
+        foreach (['/src/pages', '/src/post-types', '/src/taxonomies'] as $folder) {
+            foreach (glob($theme_dir . $folder .'/*.php') as $filename) {
+                require_once $filename;
+            }
+        }
+        
+        // ---------------
+        // VISUAL COMPOSER
+        // ---------------
+        if (function_exists('vc_map')) {
+            $vc = new \Ent\VisualComposer($theme_dir .'/src/components');
+            
+            add_action('vc_before_init', function () {
+                vc_set_default_editor_post_types(\Ent\Helpers::$vc_enabled_cpt);    
+            });
+        }
+
+        // ----
+        // i18n
+        // ----
+        if (defined('ICL_LANGUAGE_CODE')) {
+            global $sitepress;
+
+            // Get data from WPML
+            $default_locale = $sitepress->get_default_language();
+            $locales = apply_filters('wpml_active_languages', null, ['skip_missing' => 0]);
+
+            // Init Symfony Translation component and load resources
+            $translator = new Translation\Translator(ICL_LANGUAGE_CODE, new Translation\MessageSelector());
+            $translator->setFallbackLocale($default_locale);
+            $translator->addLoader('yaml', new Translation\Loader\YamlFileLoader());
+            $translator->addResource('yaml', $theme_dir .'/src/locales/'. ICL_LANGUAGE_CODE .'.yml', ICL_LANGUAGE_CODE);
+            
+            // Load also the default locale if we're not in the default one
+            if (ICL_LANGUAGE_CODE != $default_locale) {
+                $translator->addResource('yaml', $theme_dir .'/src/locales/'. $default_locale .'.yml', $default_locale);
+            }
+
+            // WordPress integration
+            add_filter('gettext', function ($str, $str_key, $domain) use ($translator) {
+                if (($domain == 'ent' || $domain == 'default') && $str == $str_key) {
+                    $str = $translator->trans($str_key);
+                }
+
+                return $str;
+            }, 20, 3);
+            
+            // Load locales in Timber
+            add_filter('timber/context', function ($data) use ($locales) {
+                $data['locales'] = array_filter($locales, function ($l) { return $l['code'] !== ICL_LANGUAGE_CODE; });
+                $data['locale'] = $locales[ICL_LANGUAGE_CODE];
+
+                return $data;
+            });
+        }
+
+        // ----
+        // TWIG
+        // ----
+        // Twig locations
+        Timber::$locations = [
+            $theme_dir .'/src/views', // User templates
+            __DIR__  .'/views',       // Ent templates
+        ];
+
+        // Visual composer templates
+        if (function_exists('vc_map')) {
+            Timber::$locations[] = $theme_dir .'/src/components/views';
+            Timber::$locations[] = __DIR__ .'/VisualComposer/Component/views';
+        }
+
+        add_filter('get_twig', function ($twig) use ($assets) {
+            $twig->addFunction(new \Twig_SimpleFunction('asset', function ($file) use ($assets) {
+                return $assets->get($file);
+            }));
+
+            // TODO: Zertako dek hau?
+            $twig->addFunction(new \Twig_SimpleFunction('get_permalink', function ($id) {
+                if (function_exists('icl_object_id')) {
+                    $id = apply_filters('wpml_object_id', $id);
+                }
+
+                return get_permalink($id);
+            }));
+
+            return $twig;
+        });
+
+        // ----
+        // MISC
+        // ----
+        // Timezone
+        date_default_timezone_set('Europe/Madrid');
+
+        // Collapse this CF complex fields
+        Helpers::cf_collapse_complex_fields('media');
+        Helpers::cf_collapse_complex_fields('attachments');
+        Helpers::cf_collapse_complex_fields('links');
+
+        // Add mime types
+        add_filter('upload_mimes', function ($mimes) {
+            $mimes['svg'] = 'image/svg+xml';
+
+            return $mimes;
+        });
+
+        /*
+        // Remove default image sizes
+        add_filter('intermediate_image_sizes_advanced', function ($sizes) {
+            //unset( $sizes['thumbnail']);
+            unset( $sizes['medium']);
+            unset( $sizes['large']);
+
+            return $sizes;
+        });*/
+
+        // Save Context for VC Components
+        add_filter('timber/loader/render_data', function ($data) {
+            // Only save context on first call per request
+            // This should be the legit Timber::render
+            if (is_null(\Ent::$context)) {
+                \Ent::$context = $data;
+            }
+
+            return $data;
+        }, 99999);
+
+        add_action('after_setup_theme', function () {
+            // Enable features from Soil when plugin is activated
+            // https://roots.io/plugins/soil/
+            add_theme_support('soil-clean-up');
+            add_theme_support('soil-nice-search');
+            add_theme_support('soil-jquery-cdn');
+            add_theme_support('soil-relative-urls');
+        });
+    }
+
+    public static function get_context() {
+        return self::$context;
+    }
+    
+    public static function handle_request() {
+        $context = Timber::get_context();
+        $context['layout'] = 'layout.twig';
+        
+        if (is_home()) {
+            $context['posts'] = Timber::get_posts();
+            $tpl = 'blog.twig';
+        } else if (is_page()) {
+            $context['page'] = new Timber\Post();
+            $tpl = 'page.twig';
+        } else if (is_404()) {
+            $tpl = '404.twig';
+        } else {
+            $tpl = 'index.twig';
+        }
+        
+        Timber::render([$tpl, 'ent/'. $tpl], $context);
+    }
+}

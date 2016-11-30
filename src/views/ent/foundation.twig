@@ -1,0 +1,27 @@
+{% macro _submenu(menu) %}
+    {% import _self as ent %}
+
+    <ul class="menu">
+        {% for item in menu.children %}
+            <li class="{{ item.classes|join(' ') }}"><a href="{{ item.link }}">{{ item.name }}</a>
+                {% if item.children %}
+                    {{ ent._submenu(item) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% macro menu(menu, class) %}
+    {% import _self as ent %}
+
+    <ul class="{{ class }} dropdown" data-dropdown-menu>
+        {% for item in menu.get_items %}
+            <li class="{{ item.classes|join(' ') }}"><a href="{{ item.link }}">{{ item.name }}</a>
+                {% if item.children %}
+                    {{ ent._submenu(item) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
