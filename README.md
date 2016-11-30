@@ -1,2 +1,4 @@
 # ent
-WP theme framework. Inspired by Sage, integrated with Timber.
+PHP library for Ent WordPress theme.
+
+See: https://github.com/doup/ent-theme
