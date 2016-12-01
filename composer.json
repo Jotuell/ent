@@ -8,6 +8,7 @@
             "homepage": "http://doup.illarra.com"
         }
     ],
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Ent\\": "src"
