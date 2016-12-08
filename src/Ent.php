@@ -7,7 +7,9 @@ use Timber;
 class Ent {
     protected static $context = null;
 
-    public function __construct($theme_dir) {
+    public function __construct($opts) {
+        $theme_dir = $opts['theme_dir'];
+        
         // Create alias so that Ent class can be accessed typing `Ent::` without namespace backslash
         class_alias(get_class($this), 'Ent');
         
@@ -22,6 +24,48 @@ class Ent {
                 require_once $filename;
             }
         }
+
+        require_once $theme_dir .'/src/routes.php';
+        
+        // ----------------
+        // MENUS & SIDEBARS
+        // ----------------
+        if ($opts['menus']) {
+            add_action('after_setup_theme', function () use ($opts) {
+                register_nav_menus($opts['menus']);
+            });
+        }
+        
+        if ($opts['sidebars']) {
+            add_action('widgets_init', function () use ($opts) {
+                foreach ($opts['sidebars'] as $id => $name) {
+                    register_sidebar([
+                        'name'          => $name,
+                        'id'            => $id,
+                        'before_widget' => '',
+                        'after_widget'  => '',
+                        'before_title'  => '',
+                        'after_title'   => '',
+                    ]);
+                }
+            });
+        }
+        
+        add_filter('timber/context', function ($data) use ($opts) {
+            if ($opts['menus']) {
+                foreach ($opts['menus'] as $id => $name) {
+                    $data[$id] = new \TimberMenu($id);
+                }
+            }
+            
+            if ($opts['sidebars']) {
+                foreach ($opts['sidebars'] as $id => $name) {
+                    $data[$id] = \Timber::get_widgets($id);
+                }
+            }
+
+            return $data;
+        });
         
         // ---------------
         // VISUAL COMPOSER
@@ -122,6 +166,13 @@ class Ent {
 
             return $mimes;
         });
+
+        // Timber post class map
+        if ($opts['post_class_map']) {
+            add_filter('Timber\PostClassMap', function () use ($opts) {
+                return $opts['post_class_map'];
+            });
+        }
 
         /*
         // Remove default image sizes
