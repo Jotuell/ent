@@ -209,19 +209,31 @@ class Ent {
         return self::$context;
     }
     
-    public static function handle_request() {
+    public static function handle_request($opts) {
         $context = Timber::get_context();
-        $context['layout'] = 'layout.twig';
+        $context['layout'] = isset($opts['layout']) ? $opts['layout'] : 'layout.twig';
+        $context['layout_sidebar'] = isset($opts['layout_sidebar']) ? $opts['layout_sidebar'] : 'ent/layouts/sidebar.twig';
         
-        if (is_home()) {
-            $context['posts'] = Timber::get_posts();
-            $tpl = 'blog.twig';
+        if (is_home() || is_archive() || is_search()) {
+            $context['posts'] =  new \Timber\PostQuery();
+            
+            if (is_home()) {
+                $tpl = 'blog.twig';
+            } else if (is_archive()) {
+                $tpl = 'archive.twig';
+            } else if (is_search()) {
+                $tpl = 'search.twig';
+            }
+        } else if (is_single()) {
+            $context['post'] = new Timber\Post();
+            $tpl = 'post.twig';
         } else if (is_page()) {
             $context['page'] = new Timber\Post();
             $tpl = 'page.twig';
         } else if (is_404()) {
             $tpl = '404.twig';
         } else {
+            // Catch-all
             $tpl = 'index.twig';
         }
         

@@ -1,0 +1,21 @@
+{% extends layout_sidebar %}
+
+{% block main_content %}
+    {% block posts_list %}
+        {% for post in posts %}
+            {% block post %}
+                <h2><a href="{{ post.link }}">{{ post.title }}</a></h2>
+                <ul class="mu-icon-list mu-icon-list--horizontal">
+                    <li class="mu-icon-list__entry"><i class="fa fa-calendar"></i>{{ post.date }}</li>
+                </ul>
+                <p>{{ post.content|excerpt(40) }}</p>
+            {% endblock %}
+        {% endfor %}
+        {% if posts.pagination.prev %}
+            <a class="button float-left" href="{{ posts.pagination.prev.link }}" class="prev {{ posts.pagination.prev.link|length ? '' : 'invisible' }}">Anterior</a>
+        {% endif %}
+        {% if posts.pagination.next %}
+            <a class="button float-right" href="{{ posts.pagination.next.link }}" class="next {{ posts.pagination.next.link|length ? '' : 'invisible' }}">Següent</a>
+        {% endif %}
+    {% endblock %}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends layout_sidebar %}
+
+{% block main_content %}
+    <div class="ent-post">
+        <h2 class="ent-post__title">{{ post.title }}</h2>
+        <ul class="ent-post__meta mu-icon-list mu-icon-list--horizontal">
+            <li class="mu-icon-list__entry"><i class="fa fa-calendar"></i>{{ post.date }}</li>
+        </ul>
+        <div class="ent-post__content">
+            {{ post.content|wpautop }}
+        </div>
+    </div>
+{% endblock %}
