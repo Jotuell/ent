@@ -1,1 +1,22 @@
 {% extends "ent/layouts/post-list.twig" %}
+
+{% block posts_list %}
+    {% if type != '' %}
+        <div class="ent-posts-filter">
+            <h2 class="ent-posts-filter__title">
+                {% if type == 'term' %}
+                    <span>{{ __('taxonomy.'~ term.taxonomy ~'.title') }}:</span> {{ term.title }}
+                {% elseif type == 'author' %}
+                    <span>{{ __('wp.blog.author') }}:</span> {{ author.name }}
+                {% elseif type == 'year' %}
+                    <span>{{ __('wp.blog.year') }}:</span> {{ year }}
+                {% elseif type == 'month' %}
+                    <span>{{ __('wp.blog.month') }}:</span> {{ month }}
+                {% elseif type == 'day' %}
+                    <span>{{ __('wp.blog.day') }}:</span> {{ day }}
+                {% endif %}
+            </h2>
+        </div>
+    {% endif %}
+    {{ parent() }}
+{% endblock %}

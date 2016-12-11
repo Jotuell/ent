@@ -1,1 +1,8 @@
 {% extends "ent/layouts/post-list.twig" %}
+
+{% block posts_list %}
+    <div class="ent-posts-filter">
+        <h2 class="ent-posts-filter__title"><span>{{ __('wp.search.text') }}:</span> {{ function('get_search_query') }}</h2>
+    </div>
+    {{ parent() }}
+{% endblock %}
