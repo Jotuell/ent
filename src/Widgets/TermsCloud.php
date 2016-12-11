@@ -21,14 +21,14 @@ class TermsCloud extends \WP_Widget {
 	public function widget($args, $instance) {
         $current_taxonomy = $this->get_current_taxonomy($instance);
 
-		$terms_cloud = wp_tag_cloud(apply_filters('widget_tag_cloud_args', [
+		$terms_cloud = wp_tag_cloud([
 			'taxonomy' => $current_taxonomy,
             'format'   => 'array',
 			'echo'     => false,
             'smallest' => 1,
             'largest'  => 1.5,
             'unit'     => 'em',
-		]));
+		]);
 
 		if (empty($terms_cloud)) {
 			return;

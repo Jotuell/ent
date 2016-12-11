@@ -26,12 +26,12 @@ class RecentPosts extends \WP_Widget {
             $number = 5;
         }
         
-        $query = new \WP_Query(apply_filters('widget_posts_args', [
+        $query = new \WP_Query([
             'posts_per_page'      => $number,
             'no_found_rows'       => true,
             'post_status'         => 'publish',
             'ignore_sticky_posts' => true
-        ]));
+        ]);
         
         if ($query->have_posts()) {
             echo '<div class="ent-widget ent-widget-recent-posts">',

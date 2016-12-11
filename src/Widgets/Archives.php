@@ -25,13 +25,13 @@ class Archives extends \WP_Widget {
 		echo '<div class="ent-widget ent-widget-archives">',
             '<ul class="mu-icon-list">';
 
-    		wp_get_archives(apply_filters('widget_archives_args', [
+    		wp_get_archives([
     			'type'            => 'monthly',
     			'show_post_count' => $count,
                 'format'          => 'custom',
                 'before'          => '<li class="mu-icon-list__entry"><i class="fa fa-calendar"></i>',
                 'after'           => '</li>',
-    		]));
+    		]);
 
 		    echo '</ul>',
         '</div>';
@@ -62,7 +62,6 @@ class Archives extends \WP_Widget {
 	 * @param array $old_instance The previous options
 	 */
 	public function update($new_instance, $instance) {
-        $instance = $old_instance;
 		$new_instance = wp_parse_args((array) $new_instance, ['count' => 0, 'dropdown' => '']);
 		$instance['count'] = $new_instance['count'] ? 1 : 0;
 		$instance['dropdown'] = $new_instance['dropdown'] ? 1 : 0;
