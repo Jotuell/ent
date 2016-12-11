@@ -19,24 +19,30 @@ class TermsCloud extends \WP_Widget {
 	 * @param array $instance
 	 */
 	public function widget($args, $instance) {
-        /*
-        $show_placeholder_text = isset($instance['show_placeholder_text']) ? (bool) $instance['show_placeholder_text'] : true;
-        $show_search_button = isset($instance['show_search_button']) ? (bool) $instance['show_search_button'] : false;
-        ?>
-        <div class="ent-widget ent-widget-search">            
-            <form role="search" method="get" action="<?php echo esc_url(home_url('/')); ?>">
-                <div class="input-group">
-                    <input class="ent-widget-search__input input-group-field" type="text" name="s" value="<?php echo get_search_query() ?>" <?php if($show_placeholder_text) { ?>placeholder="<?php echo __('wp.search.text') ?>…"<?php } ?>>
-                    <?php if($show_search_button) { ?>
-                        <div class="input-group-button">
-                            <button type="submit" class="ent-widget-search__button button"><i class="fa fa-search"></i></button>
-                        </div>
-                    <?php } ?>
-                </div>
-            </form>
-        </div>
-        <?php
-        */
+        $current_taxonomy = $this->get_current_taxonomy($instance);
+
+		$terms_cloud = wp_tag_cloud(apply_filters('widget_tag_cloud_args', [
+			'taxonomy' => $current_taxonomy,
+            'format'   => 'array',
+			'echo'     => false,
+            'smallest' => 1,
+            'largest'  => 1.5,
+            'unit'     => 'em',
+		]));
+
+		if (empty($terms_cloud)) {
+			return;
+		}
+
+		echo '<div class="ent-widget ent-widget-terms-cloud">',
+            '<ul class="mu-icon-list mu-icon-list--horizontal">';
+        
+            foreach ($terms_cloud as $term) {
+                echo '<li class="mu-icon-list__entry">', $term ,'</li>';
+            }
+
+		    echo '</ul>',
+        '</div>';
 	}
 
 	/**
@@ -45,21 +51,58 @@ class TermsCloud extends \WP_Widget {
 	 * @param array $instance The widget options
 	 */
 	public function form($instance) {
-        /*
-        //Defaults
-        $show_placeholder_text = isset($instance['show_placeholder_text']) ? (bool) $instance['show_placeholder_text'] : true;
-        $show_search_button = isset($instance['show_search_button']) ? (bool) $instance['show_search_button'] : false;
-        ?>
-        <p>
-        <input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id('show_placeholder_text'); ?>" name="<?php echo $this->get_field_name('show_placeholder_text'); ?>"<?php checked($show_placeholder_text); ?> />
-        <label for="<?php echo $this->get_field_id('show_placeholder_text'); ?>">Show placeholder text</label>
-        <br />
-        <input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id('show_search_button'); ?>" name="<?php echo $this->get_field_name('show_search_button'); ?>"<?php checked($show_search_button); ?> />
-        <label for="<?php echo $this->get_field_id('show_search_button'); ?>">Show search button</label>
-        </p>
-        <?php
-        */
+        $current_taxonomy = $this->get_current_taxonomy($instance);
+		$taxonomies       = get_taxonomies(['show_tagcloud' => true], 'object');
+		$id               = $this->get_field_id('taxonomy');
+		$name             = $this->get_field_name('taxonomy');
+		$input            = '<input type="hidden" id="'. $id .'" name="'. $name .'" value="%s" />';
+
+		switch (count($taxonomies)) {
+    		// No tag cloud supporting taxonomies found, display error message
+    		case 0:
+    			echo '<p>'. __('The tag cloud will not be displayed since there are no taxonomies that support the tag cloud widget.') .'</p>';
+    			printf($input, '');
+
+    			break;
+
+    		// Just a single tag cloud supporting taxonomy found, no need to display options
+    		case 1:
+    			$keys = array_keys($taxonomies);
+    			$taxonomy = reset($keys);
+    			printf($input, esc_attr($taxonomy));
+
+    			break;
+
+    		// More than one tag cloud supporting taxonomy found, display options
+    		default:
+    			printf(
+    				'<p><label for="%1$s">%2$s</label>' .
+    				'<select class="widefat" id="%1$s" name="%3$s">',
+    				$id,
+    				__('Taxonomy:'),
+    				$name
+    			);
+
+    			foreach ($taxonomies as $taxonomy => $tax) {
+    				printf(
+    					'<option value="%s"%s>%s</option>',
+    					esc_attr($taxonomy),
+    					selected($taxonomy, $current_taxonomy, false),
+    					$tax->labels->name
+    				);
+    			}
+
+    			echo '</select></p>';
+		}
 	}
+    
+    protected function get_current_taxonomy($instance) {
+        if (!empty($instance['taxonomy']) && taxonomy_exists($instance['taxonomy'])) {
+            return $instance['taxonomy'];
+        }
+
+        return 'post_tag';
+    }
 
 	/**
 	 * Processing widget options on save
@@ -68,11 +111,9 @@ class TermsCloud extends \WP_Widget {
 	 * @param array $old_instance The previous options
 	 */
 	public function update($new_instance, $instance) {
-        /*
-        $instance['show_placeholder_text'] = empty($new_instance['show_placeholder_text']) ? 0 : 1;
-        $instance['show_search_button'] = empty($new_instance['show_search_button']) ? 0 : 1;
+        $instance = array();
+		$instance['taxonomy'] = stripslashes($new_instance['taxonomy']);
 
-        return $instance;
-        */
+		return $instance;
 	}
 }

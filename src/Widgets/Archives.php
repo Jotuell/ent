@@ -19,24 +19,22 @@ class Archives extends \WP_Widget {
 	 * @param array $instance
 	 */
 	public function widget($args, $instance) {
-        /*
-        $show_placeholder_text = isset($instance['show_placeholder_text']) ? (bool) $instance['show_placeholder_text'] : true;
-        $show_search_button = isset($instance['show_search_button']) ? (bool) $instance['show_search_button'] : false;
-        ?>
-        <div class="ent-widget ent-widget-search">            
-            <form role="search" method="get" action="<?php echo esc_url(home_url('/')); ?>">
-                <div class="input-group">
-                    <input class="ent-widget-search__input input-group-field" type="text" name="s" value="<?php echo get_search_query() ?>" <?php if($show_placeholder_text) { ?>placeholder="<?php echo __('wp.search.text') ?>…"<?php } ?>>
-                    <?php if($show_search_button) { ?>
-                        <div class="input-group-button">
-                            <button type="submit" class="ent-widget-search__button button"><i class="fa fa-search"></i></button>
-                        </div>
-                    <?php } ?>
-                </div>
-            </form>
-        </div>
-        <?php
-        */
+        $count = empty($instance['count']) ? '0' : '1';
+		//$d = empty($instance['dropdown']) ? '0' : '1';
+
+		echo '<div class="ent-widget ent-widget-archives">',
+            '<ul class="mu-icon-list">';
+
+    		wp_get_archives(apply_filters('widget_archives_args', [
+    			'type'            => 'monthly',
+    			'show_post_count' => $count,
+                'format'          => 'custom',
+                'before'          => '<li class="mu-icon-list__entry"><i class="fa fa-calendar"></i>',
+                'after'           => '</li>',
+    		]));
+
+		    echo '</ul>',
+        '</div>';
 	}
 
 	/**
@@ -44,22 +42,18 @@ class Archives extends \WP_Widget {
 	 *
 	 * @param array $instance The widget options
 	 */
-	public function form($instance) {
-        /*
-        //Defaults
-        $show_placeholder_text = isset($instance['show_placeholder_text']) ? (bool) $instance['show_placeholder_text'] : true;
-        $show_search_button = isset($instance['show_search_button']) ? (bool) $instance['show_search_button'] : false;
-        ?>
-        <p>
-        <input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id('show_placeholder_text'); ?>" name="<?php echo $this->get_field_name('show_placeholder_text'); ?>"<?php checked($show_placeholder_text); ?> />
-        <label for="<?php echo $this->get_field_id('show_placeholder_text'); ?>">Show placeholder text</label>
-        <br />
-        <input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id('show_search_button'); ?>" name="<?php echo $this->get_field_name('show_search_button'); ?>"<?php checked($show_search_button); ?> />
-        <label for="<?php echo $this->get_field_id('show_search_button'); ?>">Show search button</label>
-        </p>
-        <?php
-        */
-	}
+    public function form($instance) {
+        $instance = wp_parse_args((array) $instance, ['count' => 0, 'dropdown' => '']);
+ 		?>
+ 		<p>
+ 			<!--
+            <input class="checkbox" type="checkbox"<?php checked( $instance['dropdown'] ); ?> id="<?php echo $this->get_field_id('dropdown'); ?>" name="<?php echo $this->get_field_name('dropdown'); ?>" /> <label for="<?php echo $this->get_field_id('dropdown'); ?>">Display as dropdown</label>
+ 			<br/>
+            -->
+ 			<input class="checkbox" type="checkbox"<?php checked( $instance['count'] ); ?> id="<?php echo $this->get_field_id('count'); ?>" name="<?php echo $this->get_field_name('count'); ?>" /> <label for="<?php echo $this->get_field_id('count'); ?>">Show post counts</label>
+ 		</p>
+ 		<?php
+ 	}
 
 	/**
 	 * Processing widget options on save
@@ -68,11 +62,11 @@ class Archives extends \WP_Widget {
 	 * @param array $old_instance The previous options
 	 */
 	public function update($new_instance, $instance) {
-        /*
-        $instance['show_placeholder_text'] = empty($new_instance['show_placeholder_text']) ? 0 : 1;
-        $instance['show_search_button'] = empty($new_instance['show_search_button']) ? 0 : 1;
+        $instance = $old_instance;
+		$new_instance = wp_parse_args((array) $new_instance, ['count' => 0, 'dropdown' => '']);
+		$instance['count'] = $new_instance['count'] ? 1 : 0;
+		$instance['dropdown'] = $new_instance['dropdown'] ? 1 : 0;
 
-        return $instance;
-        */
+		return $instance;
 	}
 }
