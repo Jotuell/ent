@@ -110,6 +110,7 @@ class Ent {
 
             // Get data from WPML
             $default_locale = $sitepress->get_default_language();
+            $hidden_locales = $sitepress->get_setting('hidden_languages');
             $locales = apply_filters('wpml_active_languages', null, ['skip_missing' => 0]);
 
             // Init Symfony Translation component and load resources
@@ -133,9 +134,14 @@ class Ent {
             }, 20, 3);
             
             // Load locales in Timber
-            add_filter('timber/context', function ($data) use ($locales) {
-                $data['locales'] = array_filter($locales, function ($l) { return $l['code'] !== ICL_LANGUAGE_CODE; });
-                $data['locale'] = $locales[ICL_LANGUAGE_CODE];
+            add_filter('timber/context', function ($data) use ($locales, $hidden_locales) {
+                $data['locales'] = [
+                    'current' => $locales[ICL_LANGUAGE_CODE],
+                    'alt' => array_filter($locales, function ($l) use ($hidden_locales) {
+                        return $l['code'] !== ICL_LANGUAGE_CODE &&
+                               (!in_array($l['code'], $hidden_locales) || is_user_logged_in());
+                    })
+                ];
 
                 return $data;
             });
@@ -147,7 +153,7 @@ class Ent {
         // Twig locations
         Timber::$locations = [
             $theme_dir .'/src/views', // User templates
-            __DIR__  .'/views',       // Ent templates
+            __DIR__ .'/views',        // Ent templates
         ];
 
         // Visual composer templates
