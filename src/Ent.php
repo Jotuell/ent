@@ -9,10 +9,10 @@ class Ent {
 
     public function __construct($opts) {
         $theme_dir = $opts['theme_dir'];
-        
+
         // Create alias so that Ent class can be accessed typing `Ent::` without namespace backslash
         class_alias(get_class($this), 'Ent');
-        
+
         $timber = new Timber\Timber();
         $assets = new \Ent\AssetsJSON($theme_dir .'/assets/assets.json', get_template_directory_uri());
 
@@ -26,7 +26,7 @@ class Ent {
         }
 
         require_once $theme_dir .'/src/routes.php';
-        
+
         // ----------------
         // MENUS & SIDEBARS
         // ----------------
@@ -35,7 +35,7 @@ class Ent {
                 register_nav_menus($opts['menus']);
             });
         }
-        
+
         if ($opts['sidebars']) {
             add_action('widgets_init', function () use ($opts) {
                 foreach ($opts['sidebars'] as $id => $name) {
@@ -50,14 +50,14 @@ class Ent {
                 }
             });
         }
-        
+
         add_filter('timber/context', function ($data) use ($opts) {
             if ($opts['menus']) {
                 foreach ($opts['menus'] as $id => $name) {
                     $data[$id] = new \TimberMenu($id);
                 }
             }
-            
+
             if ($opts['sidebars']) {
                 foreach ($opts['sidebars'] as $id => $name) {
                     $data[$id] = \Timber::get_widgets($id);
@@ -66,7 +66,7 @@ class Ent {
 
             return $data;
         });
-        
+
         // -------
         // WIDGETS
         // -------
@@ -90,15 +90,15 @@ class Ent {
                 register_widget('Ent\\Widgets\\'. basename($filename, '.php'));
             }
         });
-        
+
         // ---------------
         // VISUAL COMPOSER
         // ---------------
         if (function_exists('vc_map')) {
             $vc = new \Ent\VisualComposer($theme_dir .'/src/components');
-            
+
             add_action('vc_before_init', function () {
-                vc_set_default_editor_post_types(\Ent\Helpers::$vc_enabled_cpt);    
+                vc_set_default_editor_post_types(\Ent\Helpers::$vc_enabled_cpt);
             });
         }
 
@@ -106,44 +106,42 @@ class Ent {
         // i18n
         // ----
         if (defined('ICL_LANGUAGE_CODE')) {
-            global $sitepress;
+            add_action('wp', function () use ($theme_dir) {
+                global $sitepress;
 
-            // Get data from WPML
-            $default_locale = $sitepress->get_default_language();
-            $hidden_locales = $sitepress->get_setting('hidden_languages');
-            $locales = apply_filters('wpml_active_languages', null, ['skip_missing' => 0]);
+                // Get data from WPML
+                $default_locale = $sitepress->get_default_language();
+                $locales = icl_get_languages('skip_missing=0');
 
-            // Init Symfony Translation component and load resources
-            $translator = new Translation\Translator(ICL_LANGUAGE_CODE, new Translation\MessageSelector());
-            $translator->setFallbackLocale($default_locale);
-            $translator->addLoader('yaml', new Translation\Loader\YamlFileLoader());
-            $translator->addResource('yaml', $theme_dir .'/src/locales/'. ICL_LANGUAGE_CODE .'.yml', ICL_LANGUAGE_CODE);
-            
-            // Load also the default locale if we're not in the default one
-            if (ICL_LANGUAGE_CODE != $default_locale) {
-                $translator->addResource('yaml', $theme_dir .'/src/locales/'. $default_locale .'.yml', $default_locale);
-            }
+                // Init Symfony Translation component and load resources
+                $translator = new Translation\Translator(ICL_LANGUAGE_CODE, new Translation\MessageSelector());
+                $translator->setFallbackLocale($default_locale);
+                $translator->addLoader('yaml', new Translation\Loader\YamlFileLoader());
+                $translator->addResource('yaml', $theme_dir .'/src/locales/'. ICL_LANGUAGE_CODE .'.yml', ICL_LANGUAGE_CODE);
 
-            // WordPress integration
-            add_filter('gettext', function ($str, $str_key, $domain) use ($translator) {
-                if (($domain == 'ent' || $domain == 'default') && $str == $str_key) {
-                    $str = $translator->trans($str_key);
+                // Load also the default locale if we're not in the default one
+                if (ICL_LANGUAGE_CODE != $default_locale) {
+                    $translator->addResource('yaml', $theme_dir .'/src/locales/'. $default_locale .'.yml', $default_locale);
                 }
 
-                return $str;
-            }, 20, 3);
-            
-            // Load locales in Timber
-            add_filter('timber/context', function ($data) use ($locales, $hidden_locales) {
-                $data['locales'] = [
-                    'current' => $locales[ICL_LANGUAGE_CODE],
-                    'alt' => array_filter($locales, function ($l) use ($hidden_locales) {
-                        return $l['code'] !== ICL_LANGUAGE_CODE &&
-                               (!in_array($l['code'], $hidden_locales) || is_user_logged_in());
-                    })
-                ];
+                // WordPress integration
+                add_filter('gettext', function ($str, $str_key, $domain) use ($translator) {
+                    if (($domain == 'ent' || $domain == 'default') && $str == $str_key) {
+                        $str = $translator->trans($str_key);
+                    }
 
-                return $data;
+                    return $str;
+                }, 20, 3);
+
+                // Load locales in Timber
+                add_filter('timber/context', function ($data) use ($locales) {
+                    $data['locale'] = $locales[ICL_LANGUAGE_CODE];
+                    $data['locales'] = array_filter($locales, function ($l) {
+                        return $l['code'] !== ICL_LANGUAGE_CODE;
+                    });
+
+                    return $data;
+                });
             });
         }
 
@@ -238,15 +236,15 @@ class Ent {
     public static function get_context() {
         return self::$context;
     }
-    
+
     public static function handle_request($opts) {
         $context = Timber::get_context();
         $context['layout'] = isset($opts['layout']) ? $opts['layout'] : 'layout.twig';
         $context['layout_sidebar'] = isset($opts['layout_sidebar']) ? $opts['layout_sidebar'] : 'ent/layouts/sidebar.twig';
-        
+
         if (is_home() || is_archive() || is_search()) {
             $context['posts'] =  new \Timber\PostQuery();
-                        
+
             if (is_home()) {
                 $tpl = 'blog.twig';
             } else if (is_archive()) {
@@ -270,7 +268,7 @@ class Ent {
                 } else {
                     $context['type'] = '';
                 }
-                
+
                 $tpl = 'archive.twig';
             } else if (is_search()) {
                 $tpl = 'search.twig';
@@ -287,7 +285,7 @@ class Ent {
             // Catch-all
             $tpl = 'index.twig';
         }
-        
+
         Timber::render([$tpl, 'ent/'. $tpl], $context);
     }
 }
