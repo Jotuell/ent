@@ -1,11 +1,15 @@
 <?php
 extract(shortcode_atts(array(
-    'el_class'      => '',
+    'el_id'    => '',
+    'el_class' => '',
 ), $atts));
 
 // Vanilla
 echo
-'<section class="', $el_class ,'">',
+'<section',
+    ($el_id ? ' id="'. $el_id .'" ' : ''),
+    ($el_class ? ' class="'. $el_class .'" ': ''),
+    '>',
     do_shortcode($content),
 '</section>';
 

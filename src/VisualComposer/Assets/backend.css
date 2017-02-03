@@ -40,6 +40,12 @@
     list-style: disc;
 }
 
+#visual_composer_content .ent-container {
+    margin: 0 10px;
+    padding: 0px;
+    outline-color: #bbb;
+}
+
 .ent-user-component {
     padding: 40px;
     text-align: center;

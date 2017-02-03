@@ -22,8 +22,8 @@ class VisualComposer {
 
         // Add Ent backend VC assets
         add_action('admin_enqueue_scripts', function () {
-            wp_enqueue_script('ent-vc-backend', get_template_directory_uri() .'/src/ent/VisualComposer/Assets/backend.js', array(), null, true);
-            wp_enqueue_style('ent-vc-backend-css', get_template_directory_uri().'/src/ent/VisualComposer/Assets/backend.css', array('js_composer'));
+            wp_enqueue_script('ent-vc-backend', get_template_directory_uri() .'/vendor/doup/ent/src/VisualComposer/Assets/backend.js', array(), null, true);
+            wp_enqueue_style('ent-vc-backend-css', get_template_directory_uri().'/vendor/doup/ent/src/VisualComposer/Assets/backend.css', array('js_composer'));
         }, 9999);
 
         add_action('wp_ajax_ent_img_src', function () {
@@ -59,7 +59,7 @@ class VisualComposer {
         vc_remove_element('vc_tta_accordion');
         vc_remove_element('vc_tta_pageable');
         vc_remove_element('vc_tta_section');
-        //vc_remove_element('vc_custom_heading');
+        vc_remove_element('vc_custom_heading');
         vc_remove_element('vc_btn');
         vc_remove_element('vc_cta');
         vc_remove_element('vc_widget_sidebar');

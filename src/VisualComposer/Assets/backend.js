@@ -64,7 +64,7 @@
     };
 
     function init () {
-        window.EntCustomView = vc.shortcode_view.extend({
+        window.EntCustomView = window.vc.shortcode_view.extend({
             tpl: false,
             $wrapper: false,
             changeShortcodeParams: function(model) {
