@@ -5,7 +5,7 @@ class WPBakeryShortCode_mu_text_block extends Ent\VisualComposer\ShortCode {}
 
 $admin_tpl = <<<TPL
     <div class="mu-text-block">
-        {{{ params.content }}}
+        {{{ vc_wpautop(params.content) }}}
     </div>
 TPL;
 
