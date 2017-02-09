@@ -78,7 +78,7 @@ class Ent {
             unregister_widget('WP_Widget_Links');           // Links Widget
             unregister_widget('WP_Widget_Meta');            // Meta Widget
             unregister_widget('WP_Widget_Search');          // Search Widget
-            unregister_widget('WP_Widget_Text');            // Text Widget
+            //unregister_widget('WP_Widget_Text');            // Text Widget
             unregister_widget('WP_Widget_Categories');      // Categories Widget
             unregister_widget('WP_Widget_Recent_Posts');    // Recent Posts Widget
             unregister_widget('WP_Widget_Recent_Comments'); // Recent Comments Widget
