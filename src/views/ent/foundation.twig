@@ -1,8 +1,22 @@
 {% macro _submenu(menu) %}
     {% import _self as ent %}
 
-    <ul class="menu">
+    <ul class="menu menu--submenu">
         {% for item in menu.children %}
+            <li class="{{ item.classes|join(' ') }}"><a href="{{ item.link }}">{{ item.name }}</a>
+                {% if item.children %}
+                    {{ ent._submenu(item) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% macro _menu(menu, class, atts) %}
+    {% import _self as ent %}
+
+    <ul class="{{ class }} dropdown" {{ atts }}>
+        {% for item in menu.get_items %}
             <li class="{{ item.classes|join(' ') }}"><a href="{{ item.link }}">{{ item.name }}</a>
                 {% if item.children %}
                     {{ ent._submenu(item) }}
@@ -14,16 +28,12 @@
 
 {% macro menu(menu, class) %}
     {% import _self as ent %}
+    {{ ent._menu(menu, class ~' dropdown', 'data-dropdown-menu') }}
+{% endmacro %}
 
-    <ul class="{{ class }} dropdown" data-dropdown-menu>
-        {% for item in menu.get_items %}
-            <li class="{{ item.classes|join(' ') }}"><a href="{{ item.link }}">{{ item.name }}</a>
-                {% if item.children %}
-                    {{ ent._submenu(item) }}
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+{% macro menu_expanded(menu, class) %}
+    {% import _self as ent %}
+    {{ ent._menu(menu, class ~' dropdown') }}
 {% endmacro %}
 
 {% macro _header_locales_name(locale, type) %}
