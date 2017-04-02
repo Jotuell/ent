@@ -107,6 +107,10 @@ class Helpers {
             
             if (get_class($field) == 'Carbon_Fields\Field\Checkbox_Field') {
                 $obj->$field_name = $obj->$field_name === 'yes';
+            } else if (get_class($field) == 'Carbon_Fields\Field\Date_Field') {
+                if (!empty($obj->$field_name)) {
+                    $obj->$field_name = new \Datetime($obj->$field_name);
+                }
             }
         }
     }

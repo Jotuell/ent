@@ -67,6 +67,17 @@ class Ent {
             return $data;
         });
 
+        // -----------
+        // GOOGLE MAPS
+        // -----------
+        if ($opts['google_maps_api_key']) {
+            add_filter('get_twig', function ($twig) use ($opts) {
+                $twig->addGlobal('google_maps_api_key', $opts['google_maps_api_key']);
+
+                return $twig;
+            });
+        }
+
         // -------
         // WIDGETS
         // -------

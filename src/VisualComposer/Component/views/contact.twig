@@ -1,0 +1,27 @@
+<section class="contact">
+    <div class="row">
+        <div class="small-12 medium-6 columns">
+            {{ content|wpautop }}
+        </div>
+        <div class="small-12 medium-6 columns">
+            <div data-contact-map='{"lat":{{ lat }},"lng":{{ lng }}}' class="contact__map"></div>
+        </div>
+    </div>
+</section>
+<script>
+    function initContactMap() {
+        var mapEl = jQuery('[data-contact-map]');
+        var coordinates = mapEl.data('contact-map');
+
+        var map = new google.maps.Map(mapEl.get(0), {
+            scrollwheel: false,
+            center: coordinates,
+            zoom: 17
+        });
+
+        var marker = new google.maps.Marker({
+            position: coordinates,
+            map: map,
+        });   
+    }
+</script>
