@@ -133,7 +133,7 @@ class Helpers {
             global $submenu;
 
             // Change menu item
-            $menu[5][0] = 'Actualitat';
+            $menu[5][0] = $labels['name'];
 
             // Change post submenu
             $submenu['edit.php'][5][0] = $labels['name'];
