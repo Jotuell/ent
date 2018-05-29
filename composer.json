@@ -18,12 +18,6 @@
             "Ent\\": "src"
         }
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/doup/ent"
-        }
-    ],
     "require": {
         "timber/timber": "1.1.*",
         "htmlburger/carbon-fields": "^2.2",
