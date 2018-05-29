@@ -76,6 +76,10 @@ class Ent {
 
                 return $twig;
             });
+
+            add_action('carbon_fields_map_field_api_key', function ($current_key) use ($opts) {
+                return $opts['google_maps_api_key'];
+            });
         }
 
         // -------

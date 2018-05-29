@@ -1,6 +1,8 @@
 <?php
 namespace Ent;
 
+use Ent\VisualComposer\Helpers;
+
 class VisualComposer {
     public function __construct($user_components = null) {
         // Change standard VC templates path
@@ -22,8 +24,8 @@ class VisualComposer {
 
         // Add Ent backend VC assets
         add_action('admin_enqueue_scripts', function () {
-            wp_enqueue_script('ent-vc-backend', get_template_directory_uri() .'/vendor/doup/ent/src/VisualComposer/Assets/backend.js', array(), null, true);
-            wp_enqueue_style('ent-vc-backend-css', get_template_directory_uri().'/vendor/doup/ent/src/VisualComposer/Assets/backend.css', array('js_composer'));
+            wp_enqueue_script('ent-vc-backend', Helpers::getBackendJS(), array(), null, true);
+            wp_enqueue_style('ent-vc-backend-css', Helpers::getBackendCSS(), array('js_composer'));
         }, 9999);
 
         add_action('wp_ajax_ent_img_src', function () {
