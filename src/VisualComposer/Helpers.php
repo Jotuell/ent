@@ -5,7 +5,7 @@ class Helpers {
     static public $layout_components = ['vc_row'];
 
     public static function getAssetUrl($path) {
-        return get_template_directory_uri() .'/vendor/doup/ent/src/VisualComposer/Assets/'. $path;
+        return get_template_directory_uri() .'/vendor/jotuell/ent/src/VisualComposer/Assets/'. $path;
     }
 
     public static function getIconUrl($img) {

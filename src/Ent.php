@@ -1,6 +1,7 @@
 <?php
 namespace Ent;
 
+use Carbon_Fields\Carbon_Fields;
 use Symfony\Component\Translation;
 use Timber;
 
@@ -9,13 +10,20 @@ class Ent {
 
     public function __construct($opts) {
         $theme_dir = $opts['theme_dir'];
-
+        
+        
         // Create alias so that Ent class can be accessed typing `Ent::` without namespace backslash
         class_alias(get_class($this), 'Ent');
-
+        
         $timber = new Timber\Timber();
         $assets = new \Ent\AssetsJSON($theme_dir .'/assets/assets.json', get_template_directory_uri());
+        
+        // -----------
+        // CARBON FIELDS
+        // -----------
 
+        Carbon_Fields::boot();
+        
         // -------------
         // REQUIRE FILES
         // -------------
@@ -24,7 +32,7 @@ class Ent {
                 require_once $filename;
             }
         }
-
+        
         require_once $theme_dir .'/src/routes.php';
 
         // ----------------
@@ -66,7 +74,7 @@ class Ent {
 
             return $data;
         });
-
+        
         // -----------
         // GOOGLE MAPS
         // -----------

@@ -93,7 +93,8 @@
     text-align: center;
 }
 
-.mu-image div {
+.mu-image div,
+[data-mu-image] {
     display: inline-block;
 }
 
