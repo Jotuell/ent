@@ -9,24 +9,24 @@ class VisualComposer {
         vc_set_shortcodes_templates_dir(__DIR__ . '/VisualComposer/Standard/views');
         vc_disable_frontend();
 
-        // add_action('vc_before_init', function () {
-        //     // Remove help tips
-        //     remove_action('admin_enqueue_scripts', 'vc_pointer_load');
-        // });
+        add_action('vc_before_init', function () {
+            // Remove help tips
+            remove_action('admin_enqueue_scripts', 'vc_pointer_load');
+        });
 
         // Remove VC Frontend assets
-        // add_action('wp_enqueue_scripts', function () {
-        //     wp_dequeue_style('js_composer_front');
-        //     wp_deregister_style('js_composer_front');
-        //     wp_dequeue_script('wpb_composer_front_js');
-        //     wp_deregister_script('wpb_composer_front_js');
-        // }, 9999);
+        add_action('wp_enqueue_scripts', function () {
+            wp_dequeue_style('js_composer_front');
+            wp_deregister_style('js_composer_front');
+            wp_dequeue_script('wpb_composer_front_js');
+            wp_deregister_script('wpb_composer_front_js');
+        }, 9999);
 
         // Add Ent backend VC assets
-        // add_action('admin_enqueue_scripts', function () {
-        //     wp_enqueue_script('ent-vc-backend', Helpers::getBackendJS(), array(), null, true);
-        //     wp_enqueue_style('ent-vc-backend-css', Helpers::getBackendCSS(), array('js_composer'));
-        // }, 9999);
+        add_action('admin_enqueue_scripts', function () {
+            wp_enqueue_script('ent-vc-backend', Helpers::getBackendJS(), array(), null, true);
+            wp_enqueue_style('ent-vc-backend-css', Helpers::getBackendCSS(), array('js_composer'));
+        }, 9999);
 
         add_action('wp_ajax_ent_img_src', function () {
             $img = wp_get_attachment_image_src($_POST['id'], $_POST['size']);
@@ -109,20 +109,17 @@ class VisualComposer {
         //require_once 'vc/components/separator.php';
         //require_once 'vc/components/text-block.php';
         //require_once 'vc/components/text-columns.php';
-        
-        foreach (glob($user_components .'/*.php') as $filename) {
-            require_once $filename;
-        }
+
         add_action('init', function () use ($user_components) {
             // Load new VC components
-            // foreach (glob(__DIR__ .'/VisualComposer/Component/*.php') as $filename) {
-            //     require_once $filename;
-            // }
+            foreach (glob(__DIR__ .'/VisualComposer/Component/*.php') as $filename) {
+                require_once $filename;
+            }
 
             // Load user components
-            // foreach (glob($user_components .'/*.php') as $filename) {
-            //     require_once $filename;
-            // }
+            foreach (glob($user_components .'/*.php') as $filename) {
+                require_once $filename;
+            }
 
             // Load standard VC components tweaks
             // This must go in the end so that Helpers::map() 'is_layout' can be injected to 'vc_column'
@@ -130,10 +127,10 @@ class VisualComposer {
             // vc_row: works as the section with it's variations: full-width, image to the edge…
             // vc_column: is an empty element, we must keep it as that's how VC works
             // vc_row_inner/vc_column_inner: map to foundation .row and .columns
-            // require_once 'VisualComposer/Standard/vc_column_inner.php';
-            // require_once 'VisualComposer/Standard/vc_column.php';
-            // require_once 'VisualComposer/Standard/vc_row_inner.php';
-            // require_once 'VisualComposer/Standard/vc_row.php';
+            require_once 'VisualComposer/Standard/vc_column_inner.php';
+            require_once 'VisualComposer/Standard/vc_column.php';
+            require_once 'VisualComposer/Standard/vc_row_inner.php';
+            require_once 'VisualComposer/Standard/vc_row.php';
         });
     }
 }

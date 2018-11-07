@@ -10,13 +10,13 @@ class Ent {
 
     public function __construct($opts) {
         $theme_dir = $opts['theme_dir'];
-        var_dump('Ent');
+        
         
         // Create alias so that Ent class can be accessed typing `Ent::` without namespace backslash
         class_alias(get_class($this), 'Ent');
         
         $timber = new Timber\Timber();
-        $assets = new \Ent\AssetsJSON($theme_dir .'/assets/assets.json', get_template_directory_uri());
+        $assets = new \Ent\AssetsJSON(get_template_directory_uri());
         
         // -----------
         // CARBON FIELDS
@@ -128,47 +128,47 @@ class Ent {
         // ----
         // i18n
         // ----
-        // if (defined('ICL_LANGUAGE_CODE')) {
-        //     add_action('wp', function () use ($theme_dir) {
-        //         global $sitepress;
+        if (defined('ICL_LANGUAGE_CODE')) {
+            add_action('wp', function () use ($theme_dir) {
+                global $sitepress;
 
-        //         // Get data from WPML
-        //         $default_locale = $sitepress->get_default_language();
-        //         $locales = icl_get_languages('skip_missing=0');
+                // Get data from WPML
+                $default_locale = $sitepress->get_default_language();
+                $locales = icl_get_languages('skip_missing=0');
 
-        //         // Init Symfony Translation component and load resources
-        //         $translator = new Translation\Translator(ICL_LANGUAGE_CODE, new Translation\MessageSelector());
-        //         $translator->setFallbackLocale($default_locale);
-        //         $translator->addLoader('yaml', new Translation\Loader\YamlFileLoader());
-        //         $translator->addResource('yaml', $theme_dir .'/src/locales/'. ICL_LANGUAGE_CODE .'.yml', ICL_LANGUAGE_CODE);
+                // Init Symfony Translation component and load resources
+                $translator = new Translation\Translator(ICL_LANGUAGE_CODE, new Translation\MessageSelector());
+                $translator->setFallbackLocale($default_locale);
+                $translator->addLoader('yaml', new Translation\Loader\YamlFileLoader());
+                $translator->addResource('yaml', $theme_dir .'/src/locales/'. ICL_LANGUAGE_CODE .'.yml', ICL_LANGUAGE_CODE);
 
-        //         // Load also the default locale if we're not in the default one
-        //         if (ICL_LANGUAGE_CODE != $default_locale) {
-        //             $translator->addResource('yaml', $theme_dir .'/src/locales/'. $default_locale .'.yml', $default_locale);
-        //         }
+                // Load also the default locale if we're not in the default one
+                if (ICL_LANGUAGE_CODE != $default_locale) {
+                    $translator->addResource('yaml', $theme_dir .'/src/locales/'. $default_locale .'.yml', $default_locale);
+                }
 
-        //         // WordPress integration
-        //         add_filter('gettext', function ($str, $str_key, $domain) use ($translator) {
-        //             if (($domain == 'ent' || $domain == 'default') && $str == $str_key) {
-        //                 $str = $translator->trans($str_key);
-        //             }
+                // WordPress integration
+                add_filter('gettext', function ($str, $str_key, $domain) use ($translator) {
+                    if (($domain == 'ent' || $domain == 'default') && $str == $str_key) {
+                        $str = $translator->trans($str_key);
+                    }
 
-        //             return $str;
-        //         }, 20, 3);
+                    return $str;
+                }, 20, 3);
 
-        //         // Load locales in Timber
-        //         add_filter('timber/context', function ($data) use ($locales) {
-        //             $data['locales'] = [
-        //                 'current' => $locales[ICL_LANGUAGE_CODE],
-        //                 'alt'     => array_filter($locales, function ($l) {
-        //                     return $l['code'] !== ICL_LANGUAGE_CODE;
-        //                 }),
-        //             ];
+                // Load locales in Timber
+                add_filter('timber/context', function ($data) use ($locales) {
+                    $data['locales'] = [
+                        'current' => $locales[ICL_LANGUAGE_CODE],
+                        'alt'     => array_filter($locales, function ($l) {
+                            return $l['code'] !== ICL_LANGUAGE_CODE && $l['missing'] === 0;
+                        }),
+                    ];
 
-        //             return $data;
-        //         });
-        //     });
-        // }
+                    return $data;
+                });
+            });
+        }
 
         // ----
         // TWIG
@@ -185,22 +185,22 @@ class Ent {
             Timber::$locations[] = __DIR__ .'/VisualComposer/Component/views';
         }
 
-        // add_filter('get_twig', function ($twig) use ($assets) {
-        //     $twig->addFunction(new \Twig_SimpleFunction('asset', function ($file) use ($assets) {
-        //         return $assets->get($file);
-        //     }));
+        add_filter('get_twig', function ($twig) use ($assets) {
+            $twig->addFunction(new \Twig_SimpleFunction('asset', function ($file) use ($assets) {
+                return $assets->get($file);
+            }));
 
-        //     // TODO: Zertako dek hau?
-        //     $twig->addFunction(new \Twig_SimpleFunction('get_permalink', function ($id) {
-        //         if (function_exists('icl_object_id')) {
-        //             $id = apply_filters('wpml_object_id', $id);
-        //         }
+            // TODO: Zertako dek hau?
+            $twig->addFunction(new \Twig_SimpleFunction('get_permalink', function ($id) {
+                if (function_exists('icl_object_id')) {
+                    $id = apply_filters('wpml_object_id', $id);
+                }
 
-        //         return get_permalink($id);
-        //     }));
+                return get_permalink($id);
+            }));
 
-        //     return $twig;
-        // });
+            return $twig;
+        });
 
         // ----
         // MISC

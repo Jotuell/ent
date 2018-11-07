@@ -1,7 +1,13 @@
 <?php
 use \Ent\VisualComposer\Helpers;
 
-class WPBakeryShortCode_mu_heading extends Ent\VisualComposer\ShortCode {}
+class WPBakeryShortCode_mu_heading extends Ent\VisualComposer\ShortCode {
+    protected function getContextData(array $atts) {
+        return [
+            'page_title' => get_the_title()
+        ];
+    }
+}
 
 $admin_tpl = <<<TPL
     <div class="mu-heading">
