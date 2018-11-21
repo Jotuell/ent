@@ -123,6 +123,13 @@ class Helpers {
         // https://paulund.co.uk/change-posts-text-in-admin-menu
         global $wp_post_types;
 
+        $labels = array_merge([
+            'name'       => 'Notícies',
+            'singular'   => 'Notícia',
+            'add'        => 'Afegeix',
+            'tags'       => 'Etiquetes',
+        ], $labels);
+        
         // Get the post labels
         $postLabels = $wp_post_types['post']->labels;
         $postLabels->name = $labels['name'];

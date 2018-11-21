@@ -47,6 +47,7 @@ class Helpers {
             'js_view'       => 'EntCustomView',
             'custom_markup' => '',
             'params'        => [],
+            'is_container'  => false
         ], $config);
 
         if (!$config['is_container']) {
