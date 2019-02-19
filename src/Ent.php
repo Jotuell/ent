@@ -7,184 +7,261 @@ use Timber;
 
 class Ent {
     protected static $context = null;
+    protected $theme_dir;
+    protected $opts;
+    protected $assets;
 
     public function __construct($opts) {
-        $theme_dir = $opts['theme_dir'];
-        
-        
         // Create alias so that Ent class can be accessed typing `Ent::` without namespace backslash
         class_alias(get_class($this), 'Ent');
-        
-        $timber = new Timber\Timber();
-        $assets = new \Ent\AssetsJSON(get_template_directory_uri());
-        
-        // -----------
-        // CARBON FIELDS
-        // -----------
 
-        Carbon_Fields::boot();
-        
-        // -------------
-        // REQUIRE FILES
-        // -------------
+        $this->opts = $opts;
+        $this->theme_dir = $opts['theme_dir'];
+        $this->assets = new \Ent\AssetsJSON(get_template_directory_uri());
+
+        $this->initTimber();
+        $this->setupTheme();
+        $this->setupCarbonFields();
+        $this->requireFiles();
+        $this->setupGoogleMaps();
+        $this->registerMenusAndSidebars();
+        $this->addMenusAndSidebarsToContext();
+        $this->setupInternationalization();
+        $this->setupVisualComposer();
+        $this->setupGutenberg();
+        $this->setupTwig();
+
+    }
+
+    // ----
+    // THEME
+    // ----
+    private function setupTheme(){
+        // Timezone
+        date_default_timezone_set('Europe/Madrid');
+
+        // Add mime types
+        add_filter('upload_mimes', function ($mimes) {
+            $mimes['svg'] = 'image/svg+xml';
+
+            return $mimes;
+        });
+    }
+
+    // -------------
+    // TIMBER
+    // -------------
+    private function initTimber(){
+        $timber = new Timber\Timber();
+
+        // Twig locations
+        Timber::$locations = [
+            $this->theme_dir .'/src/views', // User templates
+            __DIR__ .'/views',        // Ent templates
+        ];
+
+        // Visual composer twig templates
+        if (function_exists('vc_map')) {
+            Timber::$locations[] = $this->theme_dir .'/src/components/views';
+            Timber::$locations[] = __DIR__ .'/VisualComposer/Component/views';
+        }
+
+        // Timber post class map
+        if ($this->opts['post_class_map']) {
+            $map = $this->opts['post_class_map'];
+            add_filter('Timber\PostClassMap', function () use ($map) {
+                return $map;
+            });
+        }
+    }
+
+    // -------------
+    // REQUIRE FILES
+    // -------------
+    private function requireFiles() {
         foreach (['/src/pages', '/src/post-types', '/src/taxonomies'] as $folder) {
-            foreach (glob($theme_dir . $folder .'/*.php') as $filename) {
+            foreach (glob($this->theme_dir . $folder .'/*.php') as $filename) {
                 require_once $filename;
             }
         }
-        
-        require_once $theme_dir .'/src/routes.php';
 
-        // ----------------
-        // MENUS & SIDEBARS
-        // ----------------
-        if ($opts['menus']) {
-            add_action('after_setup_theme', function () use ($opts) {
-                register_nav_menus($opts['menus']);
-            });
-        }
+        require_once $this->theme_dir .'/src/routes.php';
+    }
 
-        if ($opts['sidebars']) {
-            add_action('widgets_init', function () use ($opts) {
-                foreach ($opts['sidebars'] as $id => $name) {
+    // -----------
+    // CARBON FIELDS
+    // -----------
+    private function setupCarbonFields() {
+        //Init Carbon Fields
+        Carbon_Fields::boot();
+        // Collapse this CF complex fields
+        Helpers::cf_collapse_complex_fields('media');
+        Helpers::cf_collapse_complex_fields('attachments');
+        Helpers::cf_collapse_complex_fields('links');
+    }
+
+    // ----------------
+    // MENUS & SIDEBARS
+    // ----------------
+
+    // Registration
+    public function registerMenusAndSidebars() {
+        $menus = $this->opts['menus'];
+        $sidebars = $this->opts['sidebars'];
+        add_action( 'after_setup_theme', function () use ($menus, $sidebars) {
+            if ($menus) {
+                register_nav_menus($menus);
+            }
+
+            if ($sidebars) {
+                foreach ($sidebars as $id => $name) {
                     register_sidebar([
                         'name'          => $name,
                         'id'            => $id,
-                        'before_widget' => '<div class="ent-widget">',
+                        'before_widget' => '<div class="apo-widget">',
                         'after_widget'  => '</div>',
-                        'before_title'  => '<h4 class="ent-widget__title">',
+                        'before_title'  => '<h4 class="apo-widget__title">',
                         'after_title'   => '</h4>',
                     ]);
                 }
-            });
-        }
+            }
+        } );
 
-        add_filter('timber/context', function ($data) use ($opts) {
-            if ($opts['menus']) {
-                foreach ($opts['menus'] as $id => $name) {
+    }
+
+    // Add to timber context
+    public function addMenusAndSidebarsToContext(){
+        $menus = $this->opts['menus'];
+        $sidebars = $this->opts['sidebars'];
+        add_filter( 'timber/context', function ($data) use ($menus, $sidebars) {
+            if ($menus) {
+                foreach ($menus as $id => $name) {
                     $data[$id] = new \TimberMenu($id);
                 }
             }
 
-            if ($opts['sidebars']) {
-                foreach ($opts['sidebars'] as $id => $name) {
+            if ($sidebars) {
+                foreach ($sidebars as $id => $name) {
                     $data[$id] = \Timber::get_widgets($id);
                 }
             }
 
             return $data;
-        });
-        
-        // -----------
-        // GOOGLE MAPS
-        // -----------
-        if ($opts['google_maps_api_key']) {
-            add_filter('get_twig', function ($twig) use ($opts) {
-                $twig->addGlobal('google_maps_api_key', $opts['google_maps_api_key']);
+        } );
+    }
+
+    // -----------
+    // GOOGLE MAPS
+    // -----------
+    private function setupGoogleMaps() {
+        $api_key = $this->opts['google_maps_api_key'];
+        if ($api_key) {
+            add_filter('get_twig', function ($twig) use ($api_key) {
+                $twig->addGlobal('google_maps_api_key', $api_key);
 
                 return $twig;
             });
 
-            add_action('carbon_fields_map_field_api_key', function ($current_key) use ($opts) {
-                return $opts['google_maps_api_key'];
+            add_action('carbon_fields_map_field_api_key', function ($current_key) use ($api_key) {
+                return $api_key;
             });
         }
+    }
 
-        // -------
-        // WIDGETS
-        // -------
-        add_action('widgets_init', function () {
-            // Unregister default WordPress widgets
-            unregister_widget('WP_Widget_Pages');           // Pages Widget
-            unregister_widget('WP_Widget_Calendar');        // Calendar Widget
-            unregister_widget('WP_Widget_Archives');        // Archives Widget
-            unregister_widget('WP_Widget_Links');           // Links Widget
-            unregister_widget('WP_Widget_Meta');            // Meta Widget
-            unregister_widget('WP_Widget_Search');          // Search Widget
-            //unregister_widget('WP_Widget_Text');            // Text Widget
-            unregister_widget('WP_Widget_Categories');      // Categories Widget
-            unregister_widget('WP_Widget_Recent_Posts');    // Recent Posts Widget
-            unregister_widget('WP_Widget_Recent_Comments'); // Recent Comments Widget
-            unregister_widget('WP_Widget_RSS');             // RSS Widget
-            unregister_widget('WP_Widget_Tag_Cloud');       // Tag Cloud Widget
-            unregister_widget('WP_Nav_Menu_Widget');        // Menus Widget
+    // ----
+    // i18n
+    // ----
+    private function setupInternationalization(){
+        if (!defined('ICL_LANGUAGE_CODE'))
+            return;
 
-            foreach (glob(__DIR__ .'/Widgets/*.php') as $filename) {
-                register_widget('Ent\\Widgets\\'. basename($filename, '.php'));
+        $theme_dir = $this->theme_dir;
+        add_action('wp', function () use ($theme_dir) {
+            global $sitepress;
+
+            // Get data from WPML
+            $default_locale = $sitepress->get_default_language();
+            $locales = icl_get_languages('skip_missing=1');
+
+            // Init Symfony Translation component and load resources
+            $translator = new Translation\Translator(ICL_LANGUAGE_CODE, new Translation\MessageSelector());
+            $translator->setFallbackLocale($default_locale);
+            $translator->addLoader('yaml', new Translation\Loader\YamlFileLoader());
+            $translator->addResource('yaml', $theme_dir .'/src/locales/'. ICL_LANGUAGE_CODE .'.yml', ICL_LANGUAGE_CODE);
+
+            // Load also the default locale if we're not in the default one
+            if (ICL_LANGUAGE_CODE != $default_locale) {
+                $translator->addResource('yaml', $theme_dir .'/src/locales/'. $default_locale .'.yml', $default_locale);
             }
-        });
 
-        // ---------------
-        // VISUAL COMPOSER
-        // ---------------
+            // WordPress integration
+            add_filter('gettext', function ($str, $str_key, $domain) use ($translator) {
+                if (($domain == 'apostrof' || $domain == 'default') && $str == $str_key) {
+                    $str = $translator->trans($str_key);
+                }
+
+                return $str;
+            }, 20, 3);
+
+            // Load locales in Timber
+            add_filter('timber/context', function ($data) use ($locales) {
+                $data['locales'] = [
+                    'current' => $locales[ICL_LANGUAGE_CODE],
+                    'alt'     => array_filter($locales, function ($l) {
+                        return $l['code'] !== ICL_LANGUAGE_CODE;
+                    }),
+                ];
+
+                return $data;
+            });
+        });
+    }
+
+    // ---------------
+    // VISUAL COMPOSER
+    // ---------------
+    private function setupVisualComposer() {
         if (function_exists('vc_map')) {
-            $vc = new \Ent\VisualComposer($theme_dir .'/src/components');
+            $vc = new \Ent\VisualComposer($this->theme_dir .'/src/components');
 
             add_action('vc_before_init', function () {
                 vc_set_default_editor_post_types(\Ent\Helpers::$vc_enabled_cpt);
             });
-        }
 
-        // ----
-        // i18n
-        // ----
-        if (defined('ICL_LANGUAGE_CODE')) {
-            add_action('wp', function () use ($theme_dir) {
-                global $sitepress;
-
-                // Get data from WPML
-                $default_locale = $sitepress->get_default_language();
-                $locales = icl_get_languages('skip_missing=0');
-
-                // Init Symfony Translation component and load resources
-                $translator = new Translation\Translator(ICL_LANGUAGE_CODE, new Translation\MessageSelector());
-                $translator->setFallbackLocale($default_locale);
-                $translator->addLoader('yaml', new Translation\Loader\YamlFileLoader());
-                $translator->addResource('yaml', $theme_dir .'/src/locales/'. ICL_LANGUAGE_CODE .'.yml', ICL_LANGUAGE_CODE);
-
-                // Load also the default locale if we're not in the default one
-                if (ICL_LANGUAGE_CODE != $default_locale) {
-                    $translator->addResource('yaml', $theme_dir .'/src/locales/'. $default_locale .'.yml', $default_locale);
+            // Save Context for VC Components
+            add_filter('timber/loader/render_data', function ($data) {
+                // Only save context on first call per request
+                // This should be the legit Timber::render
+                if (is_null(\Ent::$context)) {
+                    \Ent::$context = $data;
                 }
 
-                // WordPress integration
-                add_filter('gettext', function ($str, $str_key, $domain) use ($translator) {
-                    if (($domain == 'ent' || $domain == 'default') && $str == $str_key) {
-                        $str = $translator->trans($str_key);
-                    }
-
-                    return $str;
-                }, 20, 3);
-
-                // Load locales in Timber
-                add_filter('timber/context', function ($data) use ($locales) {
-                    $data['locales'] = [
-                        'current' => $locales[ICL_LANGUAGE_CODE],
-                        'alt'     => array_filter($locales, function ($l) {
-                            return $l['code'] !== ICL_LANGUAGE_CODE && $l['missing'] === 0;
-                        }),
-                    ];
-
-                    return $data;
-                });
-            });
+                return $data;
+            }, 99999);
         }
+    }
 
-        // ----
-        // TWIG
-        // ----
-        // Twig locations
-        Timber::$locations = [
-            $theme_dir .'/src/views', // User templates
-            __DIR__ .'/views',        // Ent templates
-        ];
-
-        // Visual composer templates
-        if (function_exists('vc_map')) {
-            Timber::$locations[] = $theme_dir .'/src/components/views';
-            Timber::$locations[] = __DIR__ .'/VisualComposer/Component/views';
+    // ---------------
+    // GUTENBERG
+    // ---------------
+    private function setupGutenberg(){
+        add_filter( 'gutenberg_can_edit_post_type', array($this, 'disableGutenberg'), 10, 2 );
+        add_filter( 'use_block_editor_for_post_type', array($this, 'disableGutenberg'), 10, 2 );
+    }
+    public function disableGutenberg($can_edit, $post_type) {
+        if (in_array($post_type, \Ent\Helpers::$gutenberg_enabled_cpt)) {
+            $can_edit = true;
         }
+        $can_edit = false;
+        return $can_edit;
+    }
 
+    // ---------------
+    // TWIG
+    // ---------------
+    private function setupTwig(){
+
+        $assets = $this->assets;
         add_filter('get_twig', function ($twig) use ($assets) {
             $twig->addFunction(new \Twig_SimpleFunction('asset', function ($file) use ($assets) {
                 return $assets->get($file);
@@ -200,61 +277,6 @@ class Ent {
             }));
 
             return $twig;
-        });
-
-        // ----
-        // MISC
-        // ----
-        // Timezone
-        date_default_timezone_set('Europe/Madrid');
-
-        // Collapse this CF complex fields
-        Helpers::cf_collapse_complex_fields('media');
-        Helpers::cf_collapse_complex_fields('attachments');
-        Helpers::cf_collapse_complex_fields('links');
-
-        // Add mime types
-        add_filter('upload_mimes', function ($mimes) {
-            $mimes['svg'] = 'image/svg+xml';
-
-            return $mimes;
-        });
-
-        // Timber post class map
-        if ($opts['post_class_map']) {
-            add_filter('Timber\PostClassMap', function () use ($opts) {
-                return $opts['post_class_map'];
-            });
-        }
-
-        /*
-        // Remove default image sizes
-        add_filter('intermediate_image_sizes_advanced', function ($sizes) {
-            //unset( $sizes['thumbnail']);
-            unset( $sizes['medium']);
-            unset( $sizes['large']);
-
-            return $sizes;
-        });*/
-
-        // Save Context for VC Components
-        add_filter('timber/loader/render_data', function ($data) {
-            // Only save context on first call per request
-            // This should be the legit Timber::render
-            if (is_null(\Ent::$context)) {
-                \Ent::$context = $data;
-            }
-
-            return $data;
-        }, 99999);
-
-        add_action('after_setup_theme', function () {
-            // Enable features from Soil when plugin is activated
-            // https://roots.io/plugins/soil/
-            add_theme_support('soil-clean-up');
-            add_theme_support('soil-nice-search');
-            add_theme_support('soil-jquery-cdn');
-            add_theme_support('soil-relative-urls');
         });
     }
 

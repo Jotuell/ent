@@ -15,7 +15,7 @@
             size[0] = size[0][size[0].length - 1] != '%' ? size[0]+'px' : size[0];
             size[1] = size[1][size[1].length - 1] != '%' ? size[1]+'px' : size[1];
 
-            return '<div data-mu-image="'+ cache_id +'" style="width: '+ size[0] +'; height: '+ size[1] +'; background-image: url('+ url +'); background-size: cover; background-position: center;"></div>';
+            return '<img data-apo-image="' + cache_id + '" class="attachment-thumbnail vc_general vc_element-icon" src="' + url + '" style="width: '+ size[0] +'; height: '+ size[1] +';"/>';
         }
 
         if (cache_id in window.ent_image_cache) {
@@ -33,7 +33,7 @@
                 context: this
             }).done(function(data) {
                 window.ent_image_cache[cache_id] = data.url;
-                $('[data-mu-image="'+ cache_id +'"]').css('background-image', 'url('+ data.url +')');
+                $('[data-apo-image="'+ cache_id +'"]').attr('src', data.url);
             });
 
             return getMarkup('', cache_id, size);

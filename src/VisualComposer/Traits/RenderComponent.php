@@ -40,7 +40,7 @@ trait RenderComponent {
 
         // Add extra context data
         $atts = array_merge($atts, $this->getContextData($atts));
-
+        
         ob_start();
         \Timber::render($file .'.twig', $atts);
 

@@ -5,8 +5,9 @@ use Carbon_Fields\Field;
 
 class Helpers {
     static public $vc_enabled_cpt = [];
+    static public $gutenberg_enabled_cpt = [];
     static public $cf_containers = [];
-    
+
     public static function cf_collapse_complex_fields($field) {
         add_action('in_admin_footer', function () use ($field) {
             ?>
@@ -62,7 +63,7 @@ class Helpers {
             Field::make('text', 'url', 'URL')->set_required(true),
         ])->set_header_template('{{ title }}');
     }
-    
+
     public static function convertTaxonomyToRadio($taxonomy) {
         $cb = function () use ($taxonomy) {
             ?>
@@ -78,19 +79,23 @@ class Helpers {
         add_action('admin_footer-post.php', $cb);
         add_action('admin_footer-post-new.php', $cb);
     }
-    
+
+    public static function enableGutenbergFor($cpt) {
+        self::$gutenberg_enabled_cpt[] = $cpt;
+    }
+
     public static function enableVCFor($cpt) {
         self::$vc_enabled_cpt[] = $cpt;
     }
-    
+
     public static function getPostMeta($key, $obj) {
         self::getMeta($key, $obj, 'carbon_get_post_meta');
     }
-    
+
     public static function getTermMeta($key, $obj) {
         self::getMeta($key, $obj, 'carbon_get_term_meta');
     }
-    
+
     protected static function getMeta($key, $obj, $fn) {
         foreach (self::$cf_containers[$key]->get_fields() as $field) {
             $field_name = $field->get_base_name();
@@ -104,7 +109,7 @@ class Helpers {
             }
 
             $obj->$field_name = $fn($obj->id, $field_name, $type);
-            
+
             if (get_class($field) == 'Carbon_Fields\Field\Checkbox_Field') {
                 $obj->$field_name = $obj->$field_name === 'yes';
             } else if (get_class($field) == 'Carbon_Fields\Field\Date_Field') {
@@ -114,11 +119,11 @@ class Helpers {
             }
         }
     }
-    
+
     public static function setMeta($key, $cb) {
         self::$cf_containers[$key] = $cb();
     }
-    
+
     public static function adminChangePostLabels(array $labels = []) {
         // https://paulund.co.uk/change-posts-text-in-admin-menu
         global $wp_post_types;
@@ -129,7 +134,7 @@ class Helpers {
             'add'        => 'Afegeix',
             'tags'       => 'Etiquetes',
         ], $labels);
-        
+
         // Get the post labels
         $postLabels = $wp_post_types['post']->labels;
         $postLabels->name = $labels['name'];
@@ -148,7 +153,7 @@ class Helpers {
             $submenu['edit.php'][16][0] = $labels['tags'];
         });
     }
-    
+
     public static function adminRemoveComments() {
         // https://codex.wordpress.org/Function_Reference/remove_menu_page
         add_action('admin_menu', function () {

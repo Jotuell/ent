@@ -45,39 +45,31 @@ class Helpers {
             'name'          => ucFirst(str_replace('_', ' ', str_replace('mu_', '', $config['base']))),
             'icon'          => Helpers::getIconUrl($icon),
             'js_view'       => 'EntCustomView',
-            'custom_markup' => '',
+            'custom_markup' => null,
             'params'        => [],
             'is_container'  => false
         ], $config);
 
-        if (!$config['is_container']) {
-            if ($config['custom_markup'] == '') {
-                $config['custom_markup'] =
-                    '<div data-ent-custom-view class="ent-user-component">'.
-                        '<span>'. $config['name'] .'</span>'.
-                    '</div>'
-                ;
-            } else {
-                $config['custom_markup'] = '<div data-ent-custom-view>'. $config['custom_markup'] .'</div>';
-            }
+        if (isset($config['custom_markup']) && $config['custom_markup'] != '' ) {
+            $config['custom_markup'] = '<div data-ent-custom-view class="wpb_content_element">'. $config['custom_markup'] .'</div>';
         }
 
         // Custom markup sugar
-        $config['custom_markup'] = strtr($config['custom_markup'], [
-            '<row>'        => '<div class ="ent-row">',
-            '</row>'       => '</div>',
-            '<column>'     => '<div class ="ent-column">',
-            '</column>'    => '</div>',
-            '<column-1>'   => '<div class ="ent-column">',
-            '</column-1>'  => '</div>',
-            '<column-2>'   => '<div class ="ent-column-2">',
-            '</column-2>'  => '</div>',
-            '<column-3>'   => '<div class ="ent-column-3">',
-            '</column-3>'  => '</div>',
-            '<box>'        => '<div class ="ent-user-component"><span>',
-            '</box>'       => '</span></div>',
-            '<container/>' => '<div class="ent-container wpb_column_container vc_container_for_children vc_clearfix ui-droppable ui-sortable"></div>',
-        ]);
+        // $config['custom_markup'] = strtr($config['custom_markup'], [
+        //     '<row>'        => '<div class ="ent-row">',
+        //     '</row>'       => '</div>',
+        //     '<column>'     => '<div class ="ent-column">',
+        //     '</column>'    => '</div>',
+        //     '<column-1>'   => '<div class ="ent-column">',
+        //     '</column-1>'  => '</div>',
+        //     '<column-2>'   => '<div class ="ent-column-2">',
+        //     '</column-2>'  => '</div>',
+        //     '<column-3>'   => '<div class ="ent-column-3">',
+        //     '</column-3>'  => '</div>',
+        //     '<box>'        => '<div class ="ent-user-component"><span>',
+        //     '</box>'       => '</span></div>',
+        //     '<container/>' => '<div class="ent-container wpb_column_container vc_container_for_children vc_clearfix ui-droppable ui-sortable"></div>',
+        // ]);
 
         // Register component
         vc_lean_map($config['base'], function () use ($config) {
