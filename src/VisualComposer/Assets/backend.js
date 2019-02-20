@@ -60,7 +60,7 @@
     window.ent_link = function (link) {
         link = ent_link_parse(link);
 
-        return '<a href="'+ link.url +'" class="button">'+ (link.title || '???') +'</a>';
+        return '<a href="'+ link.url +'" class="button" target="' + link.target + '">'+ (link.title || '???') +'</a>';
     };
 
     function init () {
