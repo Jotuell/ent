@@ -26,7 +26,7 @@ class Ent {
         $this->setupGoogleMaps();
         $this->registerMenusAndSidebars();
         $this->addMenusAndSidebarsToContext();
-        $this->setupInternationalization();
+        // $this->setupInternationalization();
         $this->setupVisualComposer();
         $this->setupGutenberg();
         $this->setupTwig();
