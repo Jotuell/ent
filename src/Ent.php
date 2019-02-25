@@ -26,7 +26,7 @@ class Ent {
         $this->setupGoogleMaps();
         $this->registerMenusAndSidebars();
         $this->addMenusAndSidebarsToContext();
-        // $this->setupInternationalization();
+        $this->setupInternationalization();
         $this->setupVisualComposer();
         $this->setupGutenberg();
         $this->setupTwig();
@@ -204,16 +204,18 @@ class Ent {
             }, 20, 3);
 
             // Load locales in Timber
-            add_filter('timber/context', function ($data) use ($locales) {
-                $data['locales'] = [
-                    'current' => $locales[ICL_LANGUAGE_CODE],
-                    'alt'     => array_filter($locales, function ($l) {
-                        return $l['code'] !== ICL_LANGUAGE_CODE;
-                    }),
-                ];
+            if (!empty($locales)) {
+                add_filter('timber/context', function ($data) use ($locales) {
+                    $data['locales'] = [
+                        'current' => $locales[ICL_LANGUAGE_CODE],
+                        'alt'     => array_filter($locales, function ($l) {
+                            return $l['code'] !== ICL_LANGUAGE_CODE;
+                        }),
+                    ];
 
-                return $data;
-            });
+                    return $data;
+                });
+            }
         });
     }
 
