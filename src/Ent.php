@@ -30,6 +30,8 @@ class Ent {
         $this->setupVisualComposer();
         $this->setupGutenberg();
         $this->setupTwig();
+        $this->addOptionsToContext();
+
 
     }
 
@@ -79,13 +81,15 @@ class Ent {
     // REQUIRE FILES
     // -------------
     private function requireFiles() {
+        require_once $this->theme_dir .'/src/routes.php';
+        require_once $this->theme_dir .'/src/theme.php';
+
         foreach (['/src/pages', '/src/post-types', '/src/taxonomies'] as $folder) {
             foreach (glob($this->theme_dir . $folder .'/*.php') as $filename) {
                 require_once $filename;
             }
         }
 
-        require_once $this->theme_dir .'/src/routes.php';
     }
 
     // -----------
@@ -149,6 +153,33 @@ class Ent {
             return $data;
         } );
     }
+
+
+    // ----------------
+    // THEME OPTIONS
+    // ----------------
+
+    public function addOptionsToContext() {
+        add_filter( 'timber/context', function ($data) {
+    		$data['relevant_pages'] = [
+    			'contact' 		=> carbon_get_theme_option('contact_page'),
+    			'legal_notice' 	=> carbon_get_theme_option('legal_notice_page'),
+    			'cookies' 		=> carbon_get_theme_option('cookies_page'),
+    			'lopd' 			=> carbon_get_theme_option('lopd_page'),
+    		];
+    		$data['contact_info'] = [
+    			'phone' 	=> carbon_get_theme_option('phone'),
+    			'email' 	=> carbon_get_theme_option('email'),
+    		];
+    		$data['social_links'] = [
+    			'facebook' 	=> carbon_get_theme_option('facebook_link'),
+    			'twitter' 	=> carbon_get_theme_option('twitter_link'),
+    			'instagram' => carbon_get_theme_option('instagram_link'),
+    			'linkedin' 	=> carbon_get_theme_option('linkedin_link'),
+    		];
+    		return $data;
+        });
+	}
 
     // -----------
     // GOOGLE MAPS
