@@ -7,6 +7,7 @@ class Helpers {
     static public $vc_enabled_cpt = [];
     static public $gutenberg_enabled_cpt = [];
     static public $cf_containers = [];
+    static public $custom_taxonomy_type = '';
 
     public static function cf_collapse_complex_fields($field) {
         add_action('in_admin_footer', function () use ($field) {
@@ -78,6 +79,18 @@ class Helpers {
 
         add_action('admin_footer-post.php', $cb);
         add_action('admin_footer-post-new.php', $cb);
+    }
+
+    public static function allowTaxonomyWithCommas($taxonomy) {
+        if(!is_admin()){
+            add_filter('get_'.$taxonomy, function($tag_arr) use ($taxonomy) {
+                $tag_arr_new = $tag_arr;
+                if(isset($tag_arr->taxonomy) && $tag_arr->taxonomy == $taxonomy && strpos($tag_arr->name, '--')){
+                    $tag_arr_new->name = str_replace('--',', ',$tag_arr->name);
+                }
+                return $tag_arr_new;
+            });
+        }
     }
 
     public static function enableGutenbergFor($cpt) {
