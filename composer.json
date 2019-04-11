@@ -19,7 +19,7 @@
         }
     },
     "require": {
-        "timber/timber": "1.2.*",
+        "timber/timber": "1.2.4",
         "htmlburger/carbon-fields": "^3.0",
         "upstatement/routes": "^0.4.0",
         "symfony/translation": "2.8.*",
