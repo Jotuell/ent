@@ -1,7 +1,7 @@
 <?php
 namespace Ent;
 
-use Ent\VisualComposer\Helpers;
+use Ent\VisualComposer\Helpers as VCHelpers;
 
 class VisualComposer {
     public function __construct($user_components = null) {
@@ -10,7 +10,7 @@ class VisualComposer {
 
         // Add Ent backend VC assets
         add_action('admin_enqueue_scripts', function () {
-            wp_enqueue_script('ent-vc-backend', Helpers::getBackendJS(), array(), null, true);
+            wp_enqueue_script('ent-vc-backend', VCHelpers::getBackendJS(), array(), null, true);
             // wp_enqueue_style('ent-vc-backend-css', Helpers::getBackendCSS(), array('js_composer'));
         }, 9999);
 
