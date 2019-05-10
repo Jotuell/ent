@@ -22,8 +22,8 @@
     "require": {
         "timber/timber": "1.9.*",
         "htmlburger/carbon-fields": "^3.0",
-        "symfony/translation": "4.2.*",
-        "symfony/yaml": "4.2.*",
+        "symfony/translation": "3.4.*",
+        "symfony/yaml": "3.4.*",
         "twig/twig": "1.34.*"
     }
 }
