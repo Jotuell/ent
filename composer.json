@@ -1,6 +1,7 @@
 {
     "name": "jotuell/ent",
     "description": "Ent WordPress theme starter/framework core library.",
+    "version": "0.3.0",
     "authors": [
         {
             "name": "Asier",
