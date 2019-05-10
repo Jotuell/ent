@@ -1,7 +1,7 @@
 {
     "name": "jotuell/ent",
     "description": "Ent WordPress theme starter/framework core library.",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "authors": [
         {
             "name": "Asier",
@@ -22,8 +22,8 @@
     "require": {
         "timber/timber": "1.9.*",
         "htmlburger/carbon-fields": "^3.0",
-        "symfony/translation": "2.8.*",
-        "symfony/yaml": "2.8.*",
+        "symfony/translation": "4.2.*",
+        "symfony/yaml": "4.2.*",
         "twig/twig": "1.34.*"
     }
 }
