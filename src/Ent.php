@@ -215,8 +215,8 @@ class Ent {
             $locales = icl_get_languages('skip_missing=1');
 
             // Init Symfony Translation component and load resources
-            $translator = new Translation\Translator(ICL_LANGUAGE_CODE, new Translation\MessageSelector());
-            $translator->setFallbackLocale($default_locale);
+            $translator = new Translation\Translator(ICL_LANGUAGE_CODE);
+            $translator->setFallbackLocales([$default_locale]);
             $translator->addLoader('yaml', new Translation\Loader\YamlFileLoader());
             $translator->addResource('yaml', $theme_dir .'/src/locales/'. ICL_LANGUAGE_CODE .'.yml', ICL_LANGUAGE_CODE);
 
