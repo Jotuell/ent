@@ -19,10 +19,10 @@
         }
     },
     "require": {
-        "timber/timber": "1.1.*",
+        "timber/timber": "1.9.*",
         "htmlburger/carbon-fields": "^3.0",
-        "upstatement/routes": "^0.4.0",
         "symfony/translation": "2.8.*",
-        "symfony/yaml": "2.8.*"
+        "symfony/yaml": "2.8.*",
+        "twig/twig": "1.34.*"
     }
 }
