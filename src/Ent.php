@@ -161,21 +161,32 @@ class Ent {
 
     public function addOptionsToContext() {
         add_filter( 'timber/context', function ($data) {
+    		$data['logo'] = [
+    			'header' 		=> get_field('header_logo', 'option'),
+    			'header_alt'    => get_field('header_logo_alt', 'option'),
+    			'footer' 	    => get_field('footer_logo', 'option'),
+            ];
     		$data['relevant_pages'] = [
-    			'contact' 		=> carbon_get_theme_option('contact_page'),
-    			'legal_notice' 	=> carbon_get_theme_option('legal_notice_page'),
-    			'cookies' 		=> carbon_get_theme_option('cookies_page'),
-    			'lopd' 			=> carbon_get_theme_option('lopd_page'),
+    			'contact' 		=> get_field('contact_page', 'option'),
+    			'legal_notice' 	=> get_field('legal_notice_page', 'option'),
+    			'cookies' 		=> get_field('cookies_page', 'option'),
+    			'lopd' 			=> get_field('lopd_page', 'option'),
+    			'transparency'  => get_field('transparency_page', 'option'),
     		];
     		$data['contact_info'] = [
-    			'phone' 	=> carbon_get_theme_option('phone'),
-    			'email' 	=> carbon_get_theme_option('email'),
+    			'address' 	=> get_field('address', 'option'),
+    			'phone' 	=> get_field('phone', 'option'),
+    			'phone_alt'	=> get_field('phone_alt', 'option'),
+    			'email' 	=> get_field('email', 'option'),
+    			'newsletter'	=> get_field('newsletter', 'option'),
     		];
     		$data['social_links'] = [
-    			'facebook' 	=> carbon_get_theme_option('facebook_link'),
-    			'twitter' 	=> carbon_get_theme_option('twitter_link'),
-    			'instagram' => carbon_get_theme_option('instagram_link'),
-    			'linkedin' 	=> carbon_get_theme_option('linkedin_link'),
+    			'facebook' 	=> get_field('facebook_link', 'option'),
+    			'twitter' 	=> get_field('twitter_link', 'option'),
+    			'instagram' => get_field('instagram_link', 'option'),
+    			'linkedin' 	=> get_field('linkedin_link', 'option'),
+    			'pinterest' 	=> get_field('pinterest_link', 'option'),
+    			'google_plus' 	=> get_field('google_plus_link', 'option'),
     		];
     		return $data;
         });
@@ -296,6 +307,7 @@ class Ent {
 
         $assets = $this->assets;
         add_filter('get_twig', function ($twig) use ($assets) {
+            
             $twig->addFunction(new \Twig_SimpleFunction('asset', function ($file) use ($assets) {
                 return $assets->get($file);
             }));
